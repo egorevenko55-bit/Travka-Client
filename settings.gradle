@@ -1,0 +1,66 @@
+package com.travka.client.modules;
+
+import com.travka.client.modules.combat.KillAuraModule;
+import com.travka.client.modules.movement.AutoSprintModule;
+import com.travka.client.modules.render.ESPModule;
+import com.travka.client.modules.render.FullbrightModule;
+import com.travka.client.modules.render.FogModule;
+import com.travka.client.hud.TravkaHud;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.DrawContext;
+
+import java.util.ArrayList;
+import java.util.List;
+
+public class ModuleManager {
+
+    private final List<Module> modules = new ArrayList<>();
+    private TravkaHud hud;
+
+    public void init() {
+        // Combat
+        register(new KillAuraModule());
+
+        // Movement
+        register(new AutoSprintModule());
+
+        // Render
+        register(new FullbrightModule());
+        register(new ESPModule());
+        register(new FogModule());
+
+        // HUD (always on)
+        hud = new TravkaHud();
+
+        // Auto-enable some by default
+        getModule(FullbrightModule.class).setEnabled(true);
+        getModule(AutoSprintModule.class).setEnabled(true);
+    }
+
+    public void register(Module module) {
+        modules.add(module);
+    }
+
+    public void onTick(MinecraftClient client) {
+        if (client.player == null) return;
+        for (Module m : modules) {
+            if (m.isEnabled()) m.onTick(client);
+        }
+    }
+
+    public void onHudRender(DrawContext context, float tickDelta) {
+        hud.render(context, tickDelta);
+        for (Module m : modules) {
+            if (m.isEnabled()) m.onHudRender(context, tickDelta);
+        }
+    }
+
+    public <T extends Module> T getModule(Class<T> clazz) {
+        for (Module m : modules) {
+            if (clazz.isInstance(m)) return clazz.cast(m);
+        }
+        return null;
+    }
+
+    public List<Module> getModules() { return modules; }
+}

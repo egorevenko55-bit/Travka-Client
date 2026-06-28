@@ -1,0 +1,42 @@
+package com.travka.client.modules;
+
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.DrawContext;
+
+public abstract class Module {
+
+    private final String name;
+    private final String description;
+    private final Category category;
+    private boolean enabled;
+
+    public Module(String name, String description, Category category) {
+        this.name = name;
+        this.description = description;
+        this.category = category;
+        this.enabled = false;
+    }
+
+    public void onEnable() {}
+    public void onDisable() {}
+    public void onTick(MinecraftClient client) {}
+    public void onHudRender(DrawContext context, float tickDelta) {}
+
+    public void toggle() {
+        enabled = !enabled;
+        if (enabled) onEnable();
+        else onDisable();
+    }
+
+    public String getName() { return name; }
+    public String getDescription() { return description; }
+    public Category getCategory() { return category; }
+    public boolean isEnabled() { return enabled; }
+    public void setEnabled(boolean v) {
+        if (v != enabled) toggle();
+    }
+
+    public enum Category {
+        COMBAT, MOVEMENT, RENDER, PLAYER, MISC
+    }
+}
